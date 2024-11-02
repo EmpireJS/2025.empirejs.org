@@ -6,14 +6,12 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
     main {
         --offset-top: 3rem;
         display: flex;
-        flex-flow: column wrap;
+        flex-flow: column nowrap;
         row-gap: 1rem;
         column-gap: var(--line-thickness);
-        align-content: space-between;
         max-width: 960px;
         margin-inline: auto;
-        padding-inline: 0;
-        height: 0;
+        padding-inline: var(--line-thickness);
         position: relative;
 
         background-image: linear-gradient(90deg,
@@ -26,17 +24,28 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
         );
         background-size: calc(var(--line-thickness) * 3);
         background-repeat: no-repeat;
-        background-position: center 6rem;
-    }
-
-    main > section {
-        width: calc(50% - (var(--line-thickness) / 2));
-        min-height: 200px;
+        background-position: right 6rem;
     }
 
     section {
+        min-height: 200px;
         padding: 1rem;
         position: relative;
+        border-top-style: solid;
+        border-top-width: var(--line-thickness);
+        border-top-right-radius: calc(var(--line-thickness) * 2);
+        border-right-style: solid;
+        border-right-width: var(--line-thickness);
+    }
+
+    section:nth-child(2n+1) {
+        border-color: var(--line1-color);
+        margin-right: calc(var(--line-thickness) * 1);
+    }
+
+    section:nth-child(2n) {
+        border-color: var(--line3-color);
+        margin-right: calc(var(--line-thickness) * -1);
     }
 
     section:before {
@@ -50,33 +59,47 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
         border-radius: 100vw;
         border-style: solid;
         border-width: 3px;
-    }
-
-    section:nth-child(2n+1) {
-        border-top: var(--line-thickness) solid var(--line1-color);
-        border-right: var(--line-thickness) solid var(--line1-color);
-        border-top-right-radius: 3rem;
-    }
-
-    section:nth-child(2n+1):before {
+        border-color: inherit;
         right: calc(100% - (var(--line-thickness) / 2));
-        border-color: var(--line1-color);
     }
 
-    section:nth-child(2n) {
-        border-top: var(--line-thickness) solid var(--line3-color);
-        border-left: var(--line-thickness) solid var(--line3-color);
-        border-top-left-radius: 3rem;
+    @media (min-width: 900px) {
+        main {
+            background-position: center 6rem;
+            flex-flow: column wrap;
+            
+            /** For dev purposes, needs to be determined by the JS below */
+            height: 860px;
+        }
+
+        section {
+            width: calc(50% - (var(--line-thickness) / 2));
+        }
+
+        section:nth-child(2n+1) {
+            order: 1;
+            margin-right: 0;
+        }
+
+        section:nth-child(2n) {
+            order: 2;
+            margin-right: 0;
+            border-right: none;
+            border-top-right-radius: 0;
+            border-left: var(--line-thickness) solid var(--line3-color);
+            border-top-left-radius: calc(var(--line-thickness) * 2);
+        }
+
+        section:nth-child(2n):before {
+            left: calc(100% - (var(--line-thickness) / 2));
+            border-color: var(--line3-color);
+        }
+
+        section:nth-child(2) { 
+            margin-block-start: var(--offset-top);
+        }
     }
 
-    section:nth-child(2n):before {
-        left: calc(100% - (var(--line-thickness) / 2));
-        border-color: var(--line3-color);
-    }
-
-    main > :nth-child(2n+1) { order: 1; }
-    main > :nth-child(2n)   { order: 2; }
-    main > :nth-child(2) { margin-block-start: var(--offset-top); }
 </style>
 
 <main>
@@ -92,6 +115,9 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
     const { children } = $main;
 
     function mainSize() {
+        // Bail if not meant for two columns
+        if (window.innerWidth < 900) return;
+
         const avgSectionHeight = [...children].reduce((sum, $elem) => sum + $elem.clientHeight, 0) / children.length;
 
         const againstEdge = [...children].every(($child, i) => {
@@ -104,12 +130,11 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
         } else {
             const height = [...children].reduce((lowest, $child) => {
                 const bottom = $child.offsetTop + $child.offsetHeight;
-                console.log(bottom);
                 return bottom > lowest ? bottom : lowest;
             }, 0);
             $main.style.height = Math.ceil(height + 16) + 'px';
         }
     }
 
-    new ResizeObserver(mainSize).observe($main);
+    // new ResizeObserver(mainSize).observe($main);
 </script>
