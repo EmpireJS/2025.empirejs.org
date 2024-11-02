@@ -4,7 +4,6 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
 
 <style>
     main {
-        --offset-top: 3rem;
         display: flex;
         flex-flow: column nowrap;
         row-gap: 1rem;
@@ -24,7 +23,8 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
         );
         background-size: calc(var(--line-thickness) * 3);
         background-repeat: no-repeat;
-        background-position: right 6rem;
+        background-position-x: right;
+        background-position-y: calc(var(--line-thickness) * 5);
     }
 
     section {
@@ -65,7 +65,7 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
 
     @media (min-width: 900px) {
         main {
-            background-position: center 6rem;
+            background-position-x: center;
             flex-flow: column wrap;
             
             /** For dev purposes, needs to be determined by the JS below */
@@ -96,7 +96,7 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
         }
 
         section:nth-child(2) { 
-            margin-block-start: var(--offset-top);
+            margin-block-start: calc(var(--line-thickness) * 3);
         }
     }
 
