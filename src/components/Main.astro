@@ -1,0 +1,115 @@
+---
+const sections = [1, 2, 3, 4, 5, 6, 7];
+---
+
+<style>
+    main {
+        --offset-top: 3rem;
+        display: flex;
+        flex-flow: column wrap;
+        row-gap: 1rem;
+        column-gap: var(--line-thickness);
+        align-content: space-between;
+        max-width: 960px;
+        margin-inline: auto;
+        padding-inline: 0;
+        height: 0;
+        position: relative;
+
+        background-image: linear-gradient(90deg,
+            var(--line1-color) 0,
+            var(--line1-color) calc(100% / 3),
+            var(--line2-color) calc(100% / 3),
+            var(--line2-color) calc(200% / 3),
+            var(--line3-color) calc(200% / 3),
+            var(--line3-color) 100%
+        );
+        background-size: calc(var(--line-thickness) * 3);
+        background-repeat: no-repeat;
+        background-position: center 6rem;
+    }
+
+    main > section {
+        width: calc(50% - (var(--line-thickness) / 2));
+        min-height: 200px;
+    }
+
+    section {
+        padding: 1rem;
+        position: relative;
+    }
+
+    section:before {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        display: block;
+        aspect-ratio: 1;
+        width: var(--line-thickness);
+        background: black;
+        border-radius: 100vw;
+        border-style: solid;
+        border-width: 3px;
+    }
+
+    section:nth-child(2n+1) {
+        border-top: var(--line-thickness) solid var(--line1-color);
+        border-right: var(--line-thickness) solid var(--line1-color);
+        border-top-right-radius: 3rem;
+    }
+
+    section:nth-child(2n+1):before {
+        right: calc(100% - (var(--line-thickness) / 2));
+        border-color: var(--line1-color);
+    }
+
+    section:nth-child(2n) {
+        border-top: var(--line-thickness) solid var(--line3-color);
+        border-left: var(--line-thickness) solid var(--line3-color);
+        border-top-left-radius: 3rem;
+    }
+
+    section:nth-child(2n):before {
+        left: calc(100% - (var(--line-thickness) / 2));
+        border-color: var(--line3-color);
+    }
+
+    main > :nth-child(2n+1) { order: 1; }
+    main > :nth-child(2n)   { order: 2; }
+    main > :nth-child(2) { margin-block-start: var(--offset-top); }
+</style>
+
+<main>
+    { sections.map((content) => (
+        <section>
+            { content }
+        </section>
+    )) }
+</main>
+
+<script>
+    const $main = document.querySelector('main') as HTMLElement;
+    const { children } = $main;
+
+    function mainSize() {
+        const avgSectionHeight = [...children].reduce((sum, $elem) => sum + $elem.clientHeight, 0) / children.length;
+
+        const againstEdge = [...children].every(($child, i) => {
+            if (i % 2 !== 0) return true;
+            return $child.offsetLeft === 0;
+        });
+
+        if (!againstEdge) {
+            $main.style.height = ($main.clientHeight + avgSectionHeight) + 'px';
+        } else {
+            const height = [...children].reduce((lowest, $child) => {
+                const bottom = $child.offsetTop + $child.offsetHeight;
+                console.log(bottom);
+                return bottom > lowest ? bottom : lowest;
+            }, 0);
+            $main.style.height = Math.ceil(height + 16) + 'px';
+        }
+    }
+
+    new ResizeObserver(mainSize).observe($main);
+</script>

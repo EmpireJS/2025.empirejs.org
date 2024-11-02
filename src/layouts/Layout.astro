@@ -20,6 +20,8 @@ const { title } = Astro.props;
 	</body>
 </html>
 <style is:global>
+	*, *:before, *:after { box-sizing: border-box; }
+
 	:root {
 		--accent: 136, 58, 234;
 		--accent-light: 224, 204, 250;
@@ -30,10 +32,19 @@ const { title } = Astro.props;
 			rgb(var(--accent-light)) 30%,
 			white 60%
 		);
+
+		--line-thickness: 1.5rem;
+        --line1-color: cyan;
+        --line2-color: orange;
+        --line3-color: purple;
 	}
 	html {
 		font-family: system-ui, sans-serif;
 		background: #13151a;
+		color: white;
+	}
+	body {
+		margin: 0 2rem;
 	}
 	code {
 		font-family:
