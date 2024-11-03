@@ -29,8 +29,31 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
         background-position-y: calc(var(--line-thickness) * 4);
     }
 
-    .section-header h2 {
-        color: var(--line1-color);
+    main:after {
+        content: '';
+        background: inherit;
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    /** First section line must match the spine */
+    section:nth-child(1) {
+        --section-color: var(--line1-color) !important;
+    }
+
+    /** Second section line must match the spine */
+    section:nth-child(2) {
+        --section-color: var(--line3-color) !important;
+    }
+
+    section:nth-child(2n+1) .section-header h2 {
+        color: var(--section-color, var(--line1-color));
+    }
+
+    section:nth-child(2n) .section-header h2 {
+        color: var(--section-color, var(--line3-color));
     }
 
     .section-body {
@@ -44,13 +67,14 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
     }
 
     section:nth-child(2n+1) .section-body {
-        border-color: var(--line1-color);
+        border-color: var(--section-color, var(--line1-color));
         margin-right: calc(var(--line-thickness) * 1);
     }
 
     section:nth-child(2n) .section-body {
-        border-color: var(--line3-color);
+        border-color: var(--section-color, var(--line3-color));
         margin-right: calc(var(--line-thickness) * -1);
+        padding-inline-end: calc(var(--line-thickness) * 3);
     }
 
     .section-body:before {
@@ -73,8 +97,8 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
             background-position-x: center;
             flex-flow: column wrap;
             
-            /** For dev purposes, needs to be determined by the JS below */
-            height: 2360px;
+            /** Needs to be determined by the JS below */
+            height: 0;
         }
 
         section {
@@ -104,7 +128,7 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
         section:nth-child(2n) .section-body {
             border-right: none;
             border-top-right-radius: 0;
-            border-left: var(--line-thickness) solid var(--line3-color);
+            border-left: var(--line-thickness) solid var(--section-color, var(--line3-color));
             border-top-left-radius: calc(var(--line-thickness) * 2);
             padding-inline-end: 0;
             padding-inline-start: var(--line-thickness);
@@ -123,8 +147,11 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
 <main>
     { sorted.map(async (content) => {
         const { Content } = await content.render();
+        const style = content.data.color
+            ? `--section-color: ${content.data.color}`
+            : null
          return (
-            <section style={ `--section-color: ${content.data.color}` }>
+            <section style={ style }>
                 <div class="section-header">
                     <h2>{ content.data.title }</h2>
                 </div>
@@ -139,10 +166,11 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
 <script>
     const $main = document.querySelector('main') as HTMLElement;
     const { children } = $main;
+    const WIGGLE_ROOM = 30;
 
     function mainSize() {
         // Bail if not meant for two columns
-        if (matchMedia('min-width: 900px')) {
+        if (window.innerWidth < 900) {
             $main.style.removeProperty('height');
             return;
         };
@@ -161,9 +189,9 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
                 const bottom = $child.offsetTop + $child.offsetHeight;
                 return bottom > lowest ? bottom : lowest;
             }, 0);
-            $main.style.height = Math.ceil(height + 16) + 'px';
+            $main.style.height = Math.ceil(height + WIGGLE_ROOM) + 'px';
         }
     }
 
-    new ResizeObserver(mainSize).observe($main);
+    new ResizeObserver(() => requestAnimationFrame(mainSize)).observe($main);
 </script>

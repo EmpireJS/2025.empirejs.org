@@ -6,7 +6,7 @@ export const collections = {
     schema: z.object({
       title: z.string(),
       color: z.string().optional(),
-      position: z.number().optional().default(0),
+      position: z.number().optional().default(Infinity),
       icon: z.string().optional(),
     }),
   }),
