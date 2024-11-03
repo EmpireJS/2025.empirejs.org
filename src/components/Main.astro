@@ -1,5 +1,7 @@
 ---
-const sections = [1, 2, 3, 4, 5, 6, 7];
+import { getCollection } from 'astro:content';
+const sections = await getCollection('sections');
+const sorted = sections.sort((a, b) => b.data.position - a.data.position);
 ---
 
 <style>
@@ -24,31 +26,34 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
         background-size: calc(var(--line-thickness) * 3);
         background-repeat: no-repeat;
         background-position-x: right;
-        background-position-y: calc(var(--line-thickness) * 5);
+        background-position-y: calc(var(--line-thickness) * 4);
     }
 
-    section {
-        min-height: 200px;
-        padding: 1rem;
+    .section-header h2 {
+        color: var(--line1-color);
+    }
+
+    .section-body {
         position: relative;
         border-top-style: solid;
         border-top-width: var(--line-thickness);
         border-top-right-radius: calc(var(--line-thickness) * 2);
         border-right-style: solid;
         border-right-width: var(--line-thickness);
+        padding-inline-end: var(--line-thickness);
     }
 
-    section:nth-child(2n+1) {
+    section:nth-child(2n+1) .section-body {
         border-color: var(--line1-color);
         margin-right: calc(var(--line-thickness) * 1);
     }
 
-    section:nth-child(2n) {
+    section:nth-child(2n) .section-body {
         border-color: var(--line3-color);
         margin-right: calc(var(--line-thickness) * -1);
     }
 
-    section:before {
+    .section-body:before {
         content: '';
         position: absolute;
         bottom: 100%;
@@ -69,7 +74,7 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
             flex-flow: column wrap;
             
             /** For dev purposes, needs to be determined by the JS below */
-            height: 860px;
+            height: 2360px;
         }
 
         section {
@@ -78,36 +83,57 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
 
         section:nth-child(2n+1) {
             order: 1;
-            margin-right: 0;
         }
 
         section:nth-child(2n) {
             order: 2;
-            margin-right: 0;
-            border-right: none;
-            border-top-right-radius: 0;
-            border-left: var(--line-thickness) solid var(--line3-color);
-            border-top-left-radius: calc(var(--line-thickness) * 2);
-        }
-
-        section:nth-child(2n):before {
-            left: calc(100% - (var(--line-thickness) / 2));
-            border-color: var(--line3-color);
         }
 
         section:nth-child(2) { 
             margin-block-start: calc(var(--line-thickness) * 3);
         }
+
+        section:nth-child(2n+1) .section-body {
+            margin-right: 0;
+        }
+
+        section:nth-child(2n) .section-header {
+            margin-left: calc(var(--line-thickness) * 2);
+        }
+
+        section:nth-child(2n) .section-body {
+            border-right: none;
+            border-top-right-radius: 0;
+            border-left: var(--line-thickness) solid var(--line3-color);
+            border-top-left-radius: calc(var(--line-thickness) * 2);
+            padding-inline-end: 0;
+            padding-inline-start: var(--line-thickness);
+            margin-right: 0;
+        }
+
+        section:nth-child(2n) .section-body:before {
+            left: calc(100% - (var(--line-thickness) / 2));
+            border-color: var(--line3-color);
+        }
+
     }
 
 </style>
 
 <main>
-    { sections.map((content) => (
-        <section>
-            { content }
-        </section>
-    )) }
+    { sorted.map(async (content) => {
+        const { Content } = await content.render();
+         return (
+            <section style={ `--section-color: ${content.data.color}` }>
+                <div class="section-header">
+                    <h2>{ content.data.title }</h2>
+                </div>
+                <div class="section-body">
+                    <Content/>
+                </div>
+            </section>
+         )
+    }) }
 </main>
 
 <script>
@@ -116,13 +142,16 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
 
     function mainSize() {
         // Bail if not meant for two columns
-        if (window.innerWidth < 900) return;
+        if (matchMedia('min-width: 900px')) {
+            $main.style.removeProperty('height');
+            return;
+        };
 
         const avgSectionHeight = [...children].reduce((sum, $elem) => sum + $elem.clientHeight, 0) / children.length;
 
         const againstEdge = [...children].every(($child, i) => {
             if (i % 2 !== 0) return true;
-            return $child.offsetLeft === 0;
+            return $child.offsetLeft < ($main.clientWidth / 2);
         });
 
         if (!againstEdge) {
@@ -136,5 +165,5 @@ const sections = [1, 2, 3, 4, 5, 6, 7];
         }
     }
 
-    // new ResizeObserver(mainSize).observe($main);
+    new ResizeObserver(mainSize).observe($main);
 </script>
