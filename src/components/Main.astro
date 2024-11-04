@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import Icon from '@components/Icon.astro';
 const sections = await getCollection('sections');
 const sorted = sections.sort((a, b) => b.data.position - a.data.position);
 ---
@@ -26,7 +27,7 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
         background-size: calc(var(--line-thickness) * 3);
         background-repeat: no-repeat;
         background-position-x: right;
-        background-position-y: calc(var(--line-thickness) * 4);
+        background-position-y: calc(var(--line-thickness) * 6);
     }
 
     main:after {
@@ -36,6 +37,8 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
         inset: 0;
         z-index: 1;
         pointer-events: none;
+        /** If the sections get different colors, then remove this line */
+        opacity: 0;
     }
 
     /** First section line must match the spine */
@@ -46,6 +49,18 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
     /** Second section line must match the spine */
     section:nth-child(2) {
         --section-color: var(--line3-color) !important;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1.8em;
+    }
+
+    .section-header h2 {
+        font-size: 1em;
     }
 
     section:nth-child(2n+1) .section-header h2 {
@@ -64,6 +79,11 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
         border-right-style: solid;
         border-right-width: var(--line-thickness);
         padding-inline-end: var(--line-thickness);
+        padding-block: var(--line-thickness);
+    }
+
+    .section-body > :global(:first-child) {
+        margin-block-start: 0;
     }
 
     section:nth-child(2n+1) .section-body {
@@ -115,7 +135,7 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
 
         /** Creates the jagged offset for right column */
         section:nth-child(2) { 
-            margin-block-start: calc(var(--line-thickness) * 3);
+            margin-block-start: calc(var(--line-thickness) * 6);
         }
 
         section:nth-child(2n+1) .section-body {
@@ -155,6 +175,7 @@ const sorted = sections.sort((a, b) => b.data.position - a.data.position);
             <section style={ style }>
                 <div class="section-header">
                     <h2>{ content.data.title }</h2>
+                    { content.data.icon && <Icon ref={ content.data.icon } /> }
                 </div>
                 <div class="section-body">
                     <Content/>
